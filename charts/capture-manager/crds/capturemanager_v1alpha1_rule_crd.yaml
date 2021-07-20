@@ -1,0 +1,116 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: rules.capturemanager.affirmednetworks.com
+  annotations:
+    vendorOrigin: AffirmedNetworksInc
+spec:
+  group: capturemanager.affirmednetworks.com
+  names:
+    kind: Rule
+    listKind: RuleList
+    plural: rules
+    singular: rule
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            appLabel:
+              type: string
+            params:
+              properties:
+                filter:
+                  type: string
+                interface:
+                  type: string
+                limits:
+                  properties:
+                    duration:
+                      properties:
+                        endTime:
+                          type: string
+                        runTime:
+                          type: string
+                      type: object
+                  type: object
+                pcap:
+                  properties:
+                    maxBackups:
+                      format: int64
+                      type: integer
+                    maxSize:
+                      type: string
+                    prefix:
+                      type: string
+                  type: object
+              type: object
+          type: object
+        status:
+          properties:
+            captures:
+              additionalProperties:
+                properties:
+                  id:
+                    type: string
+                  state:
+                    properties:
+                      err:
+                        type: string
+                      value:
+                        type: string
+                    type: object
+                  stats:
+                    properties:
+                      duration:
+                        type: string
+                      numBytes:
+                        format: int64
+                        type: integer
+                      numPackets:
+                        format: int64
+                        type: integer
+                    type: object
+                required:
+                - stats
+                type: object
+              type: object
+            initialized:
+              type: boolean
+          type: object
+  additionalPrinterColumns:
+  - name: AppSelector 
+    type: string
+    description: The application label used to select the target pods 
+    JSONPath: .spec.appLabel
+  - name: Filter 
+    type: string
+    description: The capture filter as a BPF expression 
+    JSONPath: .spec.params.filter
+  - name: EndTime 
+    type: string
+    description: The capture duration 
+    JSONPath: .spec.params.limits.duration.endTime
+  - name: Age
+    type: date
+    JSONPath: .metadata.creationTimestamp
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

@@ -1,0 +1,178 @@
+{{- if .Values.rbacEnabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.name }}-cr
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - permissive-network
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+- apiGroups:
+  - config.istio.io
+  - monitoring.coreos.com
+  - appcatalog.appscode.com
+  - config.istio.io
+  - security.istio.io
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - capturemanager.affirmednetworks.com
+  - cert-manager.io
+  - cert-manager.io
+  - certmanager.k8s.io
+  - acme.cert-manager.io
+  - certmanager.k8s.io
+  - crd.projectcalico.org
+  - cert-manager.io
+  - certmanager.k8s.io
+  - rbac.istio.io
+  - networking.istio.io
+  - kubedb.com
+  - catalog.kubedb.com
+  - networking.istio.io
+  - etcd.database.coreos.com
+  - paasmonitor.example.com
+  - kubedb.com
+  - catalog.kubedb.com
+  - affirmednetworks.com
+  - istioconfig.affirmednetworks.com
+  - crd.projectcalico.org
+  - networking.istio.io
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - grafana.operator.com
+  - grafana.operator.com
+  - config.istio.io
+  - crd.projectcalico.org
+  - config.istio.io
+  - config.istio.io
+  - config.istio.io
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - cert-manager.io
+  - certmanager.k8s.io
+  - kafka.banzaicloud.io
+  - kafka.banzaicloud.io
+  - kafka.banzaicloud.io
+  - crd.projectcalico.org
+  - kubedb.com
+  - catalog.kubedb.com
+  - authentication.istio.io
+  - affirmednetworks.com
+  - kubedb.com
+  - catalog.kubedb.com
+  - affirmednetworks.com
+  - kubedb.com
+  - catalog.kubedb.com
+  - k8s.cni.cncf.io
+  - crd.projectcalico.org
+  - crd.projectcalico.org
+  - acme.cert-manager.io
+  - certmanager.k8s.io
+  - kubedb.com
+  - catalog.kubedb.com
+  - kubedb.com
+  - catalog.kubedb.com
+  - monitoring.coreos.com
+  - authentication.istio.io
+  - kubedb.com
+  - catalog.kubedb.com
+  - monitoring.coreos.com
+  - monitoring.coreos.com
+  - kubedb.com
+  - catalog.kubedb.com
+  - config.istio.io
+  - config.istio.io
+  - rbac.istio.io
+  - kubedb.com
+  - catalog.kubedb.com
+  - capturemanager.affirmednetworks.com
+  - config.istio.io
+  - sctpservice.affirmednetworks.com
+  - networking.istio.io
+  - monitoring.coreos.com
+  - rbac.istio.io
+  - rbac.istio.io
+  - networking.istio.io
+  - config.istio.io
+  - networking.istio.io
+  - zookeeper.pravega.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - extensions
+  resources:
+  - thirdpartyresources
+  verbs:
+  - "*"
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - "*"
+- apiGroups:
+  - '*'
+  resources:
+  - componentstatuses
+  - events
+  - endpoints
+  - nodes
+  - persistentvolumes
+  - resourcequotas
+  - replicasets
+  - replicationcontrollers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - pods
+  - deployments
+  - services
+  - namespaces
+  - configmaps
+  - secrets
+  - jobs
+  - daemonsets
+  - limitranges
+  - serviceaccounts
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - delete
+  - patch
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - '*'
+{{ end }}

@@ -1,0 +1,42 @@
+docker: 
+  image:  
+    name: "nmalhotra/capture-ss"
+    tag:  "latest"
+
+serviceAccountName: "capture-system-sa"
+
+name: "capture-stream-server"
+
+capturePath: ""
+# capturePath: "/fileserver"
+
+deployment:
+  replicas:  1    
+
+grpc:
+  port: 9890
+
+hpa:
+  enabled:            true
+  minReplicas:        1
+  maxReplicas:        5
+  threshold:          80
+  workerCpuRequests:  200m
+
+  # # PaaS Fileserver Selector
+  # global:
+  #   fileserver:
+  #     nfs:
+  #       remoteHost: 85
+  #       remotePath: "/filestore"
+# pv:
+#   captures:
+#     name: fileserver-captures-pv
+#     capacityStorage: "5Gi"
+#     storageClassName: "captures"
+
+# pvc:
+#   captures:
+#     name: fileserver-captures-pvc
+#     requestsStorage: "5Gi"
+#     storageClassName: "captures"

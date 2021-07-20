@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace:  &deploymentNamespace {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.name }}
+    appTitle: {{ .Values.name }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+      appTitle: {{ .Values.name }}
+  template:
+    metadata:
+     labels:
+      app: {{ .Values.name }}
+      appTitle: {{ .Values.name }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      containers:
+      - name: &containerNameWorker capture-stream-server 
+        image: &containerImageWorker "{{ .Values.docker.image.name }}:{{ .Values.docker.image.tag }}"
+        imagePullPolicy: Always
+        command:
+        - /entry-point
+        args:
+        - --port={{ .Values.grpc.port }}
+        - --capture_path={{ .Values.capturePath }}/captures
+        stdin: true
+        tty: true
+        ports:
+         - name:          server-grpc
+           containerPort: {{ .Values.grpc.port }}
+        resources:
+          requests:
+            cpu: {{ .Values.hpa.workerCpuRequests }}
+        env:
+          - name: CNA_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: CNA_NODE_IPADDR
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: CNA_POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+          - name: CNA_CONTAINER_NAME
+            value: *containerNameWorker
+          - name: CNA_CONTAINER_IMAGE
+            value: *containerImageWorker
+          - name: CNA_NAMESPACE
+            value: *deploymentNamespace
+          - name: CNA_ISTIO_PROXY
+            value: "true"
+          - name: CNA_APP_TARGET_PORT
+            value: "9890"
+          - name: CNA_APP_TARGET_PORT_NAME
+            value: "server-grpc"
+          - name: CNA_POD_SERVICE
+            value: "{{ .Values.name }}"
+          - name: CNA_POD_SERVICE_IPPORT
+            value: "9890"
+          - name: CNA_FEDERATION_NAME
+            value: *deploymentNamespace
+          - name: TRACING_AGENT_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+      #  volumeMounts:
+      #   - mountPath: {{ .Values.capturePath }}
+      #     name: fileserver-captures-nfs
+      # volumes:      
+      #  - name: fileserver-captures-nfs
+      #    persistentVolumeClaim:
+      #      {{- if and .Values.global.envVars.fedType .Values.global.envVars.fedUniqueName }}
+      #      claimName: fileserver-captures-pvc-{{ .Values.global.envVars.fedType | lower | replace "_" "-" }}-{{ .Values.global.envVars.fedUniqueName | lower | replace "_" "-" }}
+      #      {{- else }}
+      #      claimName: fileserver-captures-pvc-{{ .Values.global.envVars_fedType | lower | replace "_" "-" }}-{{ .Values.global.envVars_fedUniqueName | lower | replace "_" "-" }}
+      #      {{- end }}
+      terminationGracePeriodSeconds: 10
+      restartPolicy: Always
+# ---
+# # PV and PVBinding for captures
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   {{- if and .Values.global.envVars.fedType .Values.global.envVars.fedUniqueName }}
+#   name: fileserver-captures-pv-{{ .Values.global.envVars.fedType | lower | replace "_" "-" }}-{{ .Values.global.envVars.fedUniqueName | lower | replace "_" "-" }}
+#   {{- else }}
+#   name: fileserver-captures-pv-{{ .Values.global.envVars_fedType | lower | replace "_" "-" }}-{{ .Values.global.envVars_fedUniqueName | lower | replace "_" "-" }}
+#   {{- end }}
+#   namespace: {{ .Release.Namespace }}
+# spec:
+#   capacity:
+#     storage: {{ .Values.pv.captures.capacityStorage }}
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteMany
+#   persistentVolumeReclaimPolicy: Retain
+#   storageClassName: {{ .Values.pv.captures.storageClassName }}
+#   mountOptions:
+#     - hard
+#     - nfsvers=4.1
+#   nfs:
+#     # path: {{ .Values.global.fileserver.nfs.remotePath }}/{{ .Release.Namespace }}/{{ .Values.pv.captures.storageClassName }}
+#     path: {{ .Values.global.fileserver.nfs.remotePath }}/{{ .Release.Namespace }}
+#     {{- if .Values.global.fileserver.nfs.remoteHost }}
+#     server: {{ .Values.global.fileserver.nfs.remoteHost }}
+#     {{- else }}
+#     server: {{ .Values.global.fileserver_nfs_remoteHost }}
+#     {{- end }}
+# ---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   {{- if and .Values.global.envVars.fedType .Values.global.envVars.fedUniqueName }}
+#   name: fileserver-captures-pvc-{{ .Values.global.envVars.fedType | lower | replace "_" "-" }}-{{ .Values.global.envVars.fedUniqueName | lower | replace "_" "-" }}
+#   {{- else }}
+#   name: fileserver-captures-pvc-{{ .Values.global.envVars_fedType | lower | replace "_" "-" }}-{{ .Values.global.envVars_fedUniqueName | lower | replace "_" "-" }}
+#   {{- end }}
+#   namespace: {{ .Release.Namespace }}
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   volumeMode: Filesystem
+#   resources:
+#     requests:
+#       storage: {{ .Values.pvc.captures.requestsStorage }}
+#   storageClassName: {{ .Values.pvc.captures.storageClassName }}

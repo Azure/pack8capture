@@ -1,0 +1,21 @@
+docker: 
+  image: 
+    name: "nmalhotra/capture-manager"
+    tag: "latest"
+
+
+# name is the common name alias for the application 
+name: "capture-manager"
+
+#rbac configuration
+rbacEnabled: true
+serviceAccountName: "capture-system-sa"
+
+deployment:
+  replicas: 1
+
+webhook:
+  validating:
+    name: capturemanager-admission-server
+    path: /validate-rules
+    port: 443

@@ -1,0 +1,11 @@
+apiVersion: v1
+name: pod-capture_ss
+version: 2.3.0-34-main-int-nmalhotra.cna-dbg
+description: Helm chart for capture stream server for pcap capturing collection 
+maintainers:
+- email: nitish_malhotra@affirmednetworks.com
+  name: Nitish Malhotra 
+affirmed:
+    repo:     pod-capture_ss
+    branch:   main_int
+    release:  34

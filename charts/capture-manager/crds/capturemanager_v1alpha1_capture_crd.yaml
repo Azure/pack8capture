@@ -1,0 +1,85 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: captures.capturemanager.affirmednetworks.com
+  annotations:
+    vendorOrigin: AffirmedNetworksInc
+spec:
+  group: capturemanager.affirmednetworks.com
+  names:
+    kind: Capture
+    listKind: CaptureList
+    plural: captures
+    singular: capture
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        status:
+          properties:
+            info:
+              properties:
+                id:
+                  type: string
+                state:
+                  properties:
+                    err:
+                      type: string
+                    value:
+                      type: string
+                  type: object
+                stats:
+                  properties:
+                    duration:
+                      type: string
+                    numBytes:
+                      format: int64
+                      type: integer
+                    numPackets:
+                      format: int64
+                      type: integer
+                  type: object
+              required:
+              - stats
+              type: object
+          type: object
+  
+  additionalPrinterColumns:
+  - name: State 
+    type: string
+    description: The state of the capture
+    JSONPath: .status.info.state.value 
+  - name: Duration 
+    type: string
+    description: The duration of the capture run 
+    JSONPath: .status.info.stats.duration
+  - name: Bytes 
+    type: integer 
+    description: The total bytes captured 
+    JSONPath: .status.info.stats.numBytes
+  - name: Packets 
+    type: integer 
+    description: The total packets captured 
+    JSONPath: .status.info.stats.numPackets
+  - name: Age
+    type: date
+    JSONPath: .metadata.creationTimestamp
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

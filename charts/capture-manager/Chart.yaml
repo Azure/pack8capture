@@ -1,0 +1,11 @@
+apiVersion: v1
+name: pod-capture_mgr
+version: 2.3.0-39-main-int-nmalhotra.cna-dbg
+description: Helm chart for the capturemanager components 
+maintainers:
+- email: nitish_malhotra@affirmednetworks.com
+  name: Nitish Malhotra 
+affirmed:
+  repo:     pod-capture_mgr
+  branch:   main_int
+  release:  39
