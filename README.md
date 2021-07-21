@@ -26,6 +26,96 @@ kubectl create -f echoserver-deploy.yaml -n capture-system
 kubectl create -f echoserver-capture-rule.yaml -n capture-system
 ```
 
+Send a request to the echoserver container using the Load Balancer IP:
+
+```console
+# jq is optional for pretty printing the output
+curl http://$(kubectl get svc -n capture-system echoserver -ojsonpath="{.status.loadBalancer.ingress[0].ip}") -d '{"hello":"world"}' -H "Content-type:application/json" | jq 
+```
+
+```json
+{
+  "host": {
+    "hostname": "20.72.94.248",
+    "ip": "::ffff:10.240.0.4",
+    "ips": []
+  },
+  "http": {
+    "method": "POST",
+    "baseUrl": "",
+    "originalUrl": "/",
+    "protocol": "http"
+  },
+  "request": {
+    "params": {
+      "0": "/"
+    },
+    "query": {},
+    "cookies": {},
+    "body": {
+      "hello": "world"
+    },
+    "headers": {
+      "host": "20.72.94.248",
+      "user-agent": "curl/7.77.0",
+      "accept": "*/*",
+      "content-type": "application/json",
+      "content-length": "17"
+    }
+  },
+  "environment": {
+    "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "HOSTNAME": "echoserver-5dcc4f9685-5gjqp",
+    "NODE_VERSION": "14.17.1",
+    "YARN_VERSION": "1.22.5",
+    "PORT": "80",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_SERVICE_HOST": "10.0.9.85",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_PORT_443_TCP": "tcp://10.0.9.85:443",
+    "KUBERNETES_PORT": "tcp://10.0.0.1:443",
+    "KUBERNETES_PORT_443_TCP_PROTO": "tcp",
+    "CAPTURE_STREAM_SERVER_SVC_SERVICE_PORT": "9890",
+    "CAPTURE_STREAM_SERVER_SVC_PORT": "tcp://10.0.5.35:9890",
+    "CAPTURE_STREAM_SERVER_SVC_PORT_9890_TCP": "tcp://10.0.5.35:9890",
+    "CAPTURE_STREAM_SERVER_SVC_PORT_9890_TCP_PROTO": "tcp",
+    "CAPTURE_MANAGER_METRICS_SERVICE_PORT_HTTP_METRICS": "8383",
+    "CAPTURE_MANAGER_METRICS_PORT_8686_TCP_PORT": "8686",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_PORT_443_TCP_ADDR": "10.0.9.85",
+    "ECHOSERVER_SERVICE_HOST": "10.0.144.37",
+    "KUBERNETES_PORT_443_TCP": "tcp://10.0.0.1:443",
+    "CAPTURE_MANAGER_METRICS_SERVICE_PORT": "8383",
+    "ECHOSERVER_PORT": "tcp://10.0.144.37:80",
+    "ECHOSERVER_PORT_80_TCP_PORT": "80",
+    "KUBERNETES_SERVICE_PORT": "443",
+    "CAPTURE_MANAGER_METRICS_SERVICE_HOST": "10.0.53.254",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_PORT": "tcp://10.0.9.85:443",
+    "KUBERNETES_SERVICE_PORT_HTTPS": "443",
+    "CAPTURE_MANAGER_METRICS_PORT_8383_TCP_PORT": "8383",
+    "CAPTURE_MANAGER_METRICS_PORT_8686_TCP": "tcp://10.0.53.254:8686",
+    "CAPTURE_MANAGER_METRICS_PORT_8686_TCP_ADDR": "10.0.53.254",
+    "KUBERNETES_SERVICE_HOST": "10.0.0.1",
+    "CAPTURE_MANAGER_METRICS_SERVICE_PORT_CR_METRICS": "8686",
+    "CAPTURE_MANAGER_METRICS_PORT": "tcp://10.0.53.254:8383",
+    "CAPTURE_MANAGER_METRICS_PORT_8686_TCP_PROTO": "tcp",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_PORT_443_TCP_PROTO": "tcp",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_PORT_443_TCP_PORT": "443",
+    "ECHOSERVER_SERVICE_PORT": "80",
+    "ECHOSERVER_PORT_80_TCP": "tcp://10.0.144.37:80",
+    "ECHOSERVER_PORT_80_TCP_PROTO": "tcp",
+    "ECHOSERVER_PORT_80_TCP_ADDR": "10.0.144.37",
+    "KUBERNETES_PORT_443_TCP_PORT": "443",
+    "KUBERNETES_PORT_443_TCP_ADDR": "10.0.0.1",
+    "CAPTURE_STREAM_SERVER_SVC_PORT_9890_TCP_PORT": "9890",
+    "CAPTURE_STREAM_SERVER_SVC_PORT_9890_TCP_ADDR": "10.0.5.35",
+    "CAPTURE_MANAGER_METRICS_PORT_8383_TCP": "tcp://10.0.53.254:8383",
+    "CAPTURE_STREAM_SERVER_SVC_SERVICE_HOST": "10.0.5.35",
+    "CAPTURE_MANAGER_METRICS_PORT_8383_TCP_PROTO": "tcp",
+    "CAPTURE_MANAGER_METRICS_PORT_8383_TCP_ADDR": "10.0.53.254",
+    "CAPTUREMANAGER_ADMISSION_SERVER_SERVICE_SERVICE_PORT": "443",
+    "CAPTURE_STREAM_SERVER_SVC_SERVICE_PORT_SERVER_GRPC": "9890",
+    "HOME": "/root"
+  }
+}
+```
 ## Adding the capture-agent to a pod
 
 ```diff
