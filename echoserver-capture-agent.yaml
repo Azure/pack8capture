@@ -19,6 +19,10 @@ spec:
           command:
           - /capture-agent
           env:
+          - name: CNA_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
           - name: CNA_POD_UID
             valueFrom:
               fieldRef:
@@ -32,7 +36,7 @@ spec:
           - name: CNA_APP_LABEL
             value: echoserver
           image: nmalhotra/capture-agent:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: capture-agent
           securityContext:
             capabilities:
