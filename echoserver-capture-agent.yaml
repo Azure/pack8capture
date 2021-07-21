@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echoserver
+  template:
+    metadata:
+      labels:
+        app: echoserver
+    spec:
+      serviceAccount: capture-system-sa
+      containers:
+        - args:
+          - --stream_cap_svr=capture-stream-server-svc.capture-system.svc.cluster.local:9890
+          command:
+          - /capture-agent
+          env:
+          - name: CNA_POD_UID
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.uid
+          - name: CNA_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: CNA_APP_LABEL
+            value: echoserver
+          image: nmalhotra/capture-agent:latest
+          imagePullPolicy: IfNotPresent
+          name: capture-agent
+          securityContext:
+            capabilities:
+              add:
+              - NET_ADMIN
+              - NET_RAW
+              drop:
+              - ALL
+        - env:
+          - name: PORT
+            value: "80"
+          image: ealen/echo-server:latest
+          imagePullPolicy: IfNotPresent
+          name: echoserver
+          ports:
+          - containerPort: 80
+            protocol: TCP

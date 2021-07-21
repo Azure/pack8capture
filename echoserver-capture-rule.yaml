@@ -1,0 +1,17 @@
+apiVersion: capturemanager.affirmednetworks.com/v1alpha1
+kind: Rule
+metadata:
+  name: http-rule
+  namespace: capture-system
+spec:
+  appLabel: echoserver
+  params:
+    filter: ""
+    interface: lo
+    limits:
+      duration:
+        runTime: 10m
+    pcap:
+      maxBackups: 5
+      maxSize: 2MB
+      prefix: echoserver 
