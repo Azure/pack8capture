@@ -6,11 +6,11 @@ metadata:
 spec:
   appLabel: echoserver
   params:
-    filter: ""
-    interface: lo
+    filter: "tcp port 80"
+    interface: eth0
     limits:
       duration:
-        runTime: 10m
+        runTime: 5m
     pcap:
       maxBackups: 5
       maxSize: 2MB

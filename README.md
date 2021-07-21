@@ -1,4 +1,148 @@
-# Project
+# Capture Manager
+
+## Installation
+
+On a Kubernetes cluster:
+
+```console
+# install the capture manager operator
+helm upgrade --install capture-manager charts/capture-manager -n capture-system --create-namespace 
+# install the capture stream server
+helm upgrade --install capture-stream-server charts/capture-stream-server -n capture-system --create-namespace
+```
+
+## Deploy Sample Application
+
+> We use `serviceAccount=capture-system-sa` in-order to be able to GET/WATCH the ConfigMap in the namespace `capture-system`.
+
+```console
+# install the sample application that includes the capture agent sidecar
+kubectl create -f echoserver-deploy.yaml -n capture-system
+```
+
+## Start a capture by deploying the Rule CR
+
+```console
+kubectl create -f echoserver-capture-rule.yaml -n capture-system
+```
+
+## Adding the capture-agent to a pod
+
+```diff
+apiVersion: apps/v1                                             apiVersion: apps/v1
+kind: Deployment                                                kind: Deployment
+metadata:                                                       metadata:
+  name: echoserver                                                name: echoserver
+spec:                                                           spec:
+  replicas: 3                                                     replicas: 3
+  selector:                                                       selector:
+    matchLabels:                                                    matchLabels:
+      app: echoserver                                                 app: echoserver
+  template:                                                       template:
+    metadata:                                                       metadata:
+      labels:                                                         labels:
+        app: echoserver                                                 app: echoserver
+    spec:                                                           spec:
+                                                              >       serviceAccount: capture-system-sa
+      containers:                                                     containers:
+                                                              >       - args:
+                                                              >         - --stream_cap_svr=capture-stream-server-svc.capture-
+                                                              >         command:
+                                                              >         - /capture-agent
+                                                              >         env:
+                                                              >         - name: CNA_POD_IP
+                                                              >           valueFrom:
+                                                              >             fieldRef:
+                                                              >               fieldPath: status.podIP
+                                                              >         - name: CNA_POD_UID
+                                                              >           valueFrom:
+                                                              >             fieldRef:
+                                                              >               apiVersion: v1
+                                                              >               fieldPath: metadata.uid
+                                                              >         - name: CNA_NAMESPACE
+                                                              >           valueFrom:
+                                                              >             fieldRef:
+                                                              >               apiVersion: v1
+                                                              >               fieldPath: metadata.namespace
+                                                              >         - name: CNA_APP_LABEL
+                                                              >           value: echoserver
+                                                              >         image: nmalhotra/capture-agent:latest
+                                                              >         imagePullPolicy: Always
+                                                              >         name: capture-agent
+                                                              >         securityContext:
+                                                              >           capabilities:
+                                                              >             add:
+                                                              >             - NET_ADMIN
+                                                              >             - NET_RAW
+                                                              >             drop:
+                                                              >             - ALL
+      - image: ealen/echo-server:latest                               - image: ealen/echo-server:latest
+        imagePullPolicy: IfNotPresent                                   imagePullPolicy: IfNotPresent
+        name: echoserver                                                name: echoserver
+        ports:                                                          ports:
+        - containerPort: 80                                             - containerPort: 80
+        env:                                                            env:
+        - name: PORT                                                    - name: PORT
+          value: "80"                                                     value: "80"
+---                                                             ---
+apiVersion: v1                                                  apiVersion: v1
+kind: Service                                                   kind: Service
+metadata:                                                       metadata:
+  name: echoserver                                                name: echoserver
+spec:                                                           spec:
+  ports:                                                          ports:
+    - port: 80                                                      - port: 80
+      targetPort: 80                                                  targetPort: 80
+      protocol: TCP                                                   protocol: TCP
+  type: LoadBalancer                                          |   type: LoadBalancer
+  selector:                                                       selector:
+    app: echoserver                                                 app: echoserver
+```
+
+## Creating a new capture `Rule` CR
+
+From the sample echoserver capture rule:
+
+```yaml
+apiVersion: capturemanager.affirmednetworks.com/v1alpha1
+kind: Rule
+metadata:
+  name: http-rule
+  namespace: capture-system
+spec:
+# appLabel must select the app label of the application to be captured where the app label is of the format `app=echoserver`. This is a limitation in the capture manager that requires the `app=<app-name>` label in-order to watch for the capture rule configmap.
+  appLabel: echoserver
+  params:
+		# filter in BPF format
+    filter: "tcp port 80"
+		# interface to capture on (e.g. eth0), To capture on all interfaces, use "any"
+    interface: eth0
+		# Capture limit like num bytes, num packets, num seconds
+    limits:
+      duration:
+				# example captures for a duration of 5 minutes
+        runTime: 5m
+		# PCAP file management in the storage
+    pcap:
+			# Rollover cap files when the specified number is reached
+      maxBackups: 5
+			# close the file when the specified bytes are reached 
+      maxSize: 2MB
+			# Unique prefix to identify the capture in the capture directory on the capture stream server
+      prefix: echoserver
+```
+
+### Lookup the capture files by exec-ing into the capture stream server container
+
+```console
+kubectl exec -it $(kubectl get pods -n capture-system --selector app=capture-stream-server -ojsonpath='{.items[0].metadata.name}') -n capture-system -- bash
+
+[root@capture-stream-server-765fbf4dfb-mlnv9 /]# ls /captures
+http-rule
+
+[root@capture-stream-server-765fbf4dfb-mlnv9 /]# ls captures/http-rule/
+echoserver-73c7edbb-7357-41cb-95e9-98aeafe642dd.pcap  echoserver-9dcc3735-5983-4845-adaf-983b2ab1f136.pcap  echoserver-c920fee0-1ae1-4912-b102-e4b9c0f5d960.pcap  echoserver-cc0f3a48-b1bc-4334-98a2-58b66d2a90d4.pcap
+```
 
 > This repo has been populated by an initial template to help get you started. Please
 > make sure to update the content to build a great experience for community-building.
