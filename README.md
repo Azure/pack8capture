@@ -203,22 +203,22 @@ spec:
 # appLabel must select the app label of the application to be captured where the app label is of the format `app=echoserver`. This is a limitation in the capture manager that requires the `app=<app-name>` label in-order to watch for the capture rule configmap.
   appLabel: echoserver
   params:
-		# filter in BPF format
+    # filter in BPF format
     filter: "tcp port 80"
-		# interface to capture on (e.g. eth0), To capture on all interfaces, use "any"
+    # interface to capture on (e.g. eth0), To capture on all interfaces, use "any"
     interface: eth0
-		# Capture limit like num bytes, num packets, num seconds
+    # Capture limit like num bytes, num packets, num seconds
     limits:
       duration:
-				# example captures for a duration of 5 minutes
+        # example captures for a duration of 5 minutes
         runTime: 5m
-		# PCAP file management in the storage
+    # PCAP file management in the storage
     pcap:
-			# Rollover cap files when the specified number is reached
+      # Rollover cap files when the specified number is reached
       maxBackups: 5
-			# close the file when the specified bytes are reached 
+      # close the file when the specified bytes are reached 
       maxSize: 2MB
-			# Unique prefix to identify the capture in the capture directory on the capture stream server
+      # Unique prefix to identify the capture in the capture directory on the capture stream server
       prefix: echoserver
 ```
 
